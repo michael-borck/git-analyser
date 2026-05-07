@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from importlib.metadata import version as _pkg_version
+
 import argparse
 import json
 import sys
@@ -18,7 +20,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="git-analyser",
         description="Analyse git repository history and commit patterns",
     )
-    parser.add_argument("--version", action="version", version="0.2.0")
+    parser.add_argument("--version", action="version", version=_pkg_version("git-analyser"))
 
     sub = parser.add_subparsers(dest="command")
 

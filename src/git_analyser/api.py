@@ -1,10 +1,11 @@
+from importlib.metadata import version
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from .core import analyse_repo
 from .models import GitAnalysisResult
 
-app = FastAPI(title="git-analyser", version="0.2.0")
+app = FastAPI(title="git-analyser", version=version("git-analyser"))
 
 
 class AnalyseRequest(BaseModel):
