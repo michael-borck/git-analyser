@@ -14,7 +14,7 @@ class AnalyseRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "version": version("git-analyser")}
 
 
 @app.post("/analyse", response_model=GitAnalysisResult)
