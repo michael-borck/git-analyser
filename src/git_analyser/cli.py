@@ -29,6 +29,9 @@ def _build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8007)
 
+    # manifest subcommand
+    sub.add_parser("manifest", help="Print the capability manifest as JSON")
+
     # analyse subcommand (also the default when no subcommand is given)
     analyse = sub.add_parser("analyse", help="Analyse a git repository (default)")
     analyse.add_argument(
@@ -46,12 +49,17 @@ def main() -> None:
     argv = sys.argv[1:]
 
     # If first positional arg is not a known subcommand, inject "analyse"
-    known_commands = {"serve", "analyse", "--help", "-h", "--version"}
-    if argv and not argv[0].startswith("-") and argv[0] not in {"serve", "analyse"}:
+    known_commands = {"serve", "analyse", "manifest", "--help", "-h", "--version"}
+    if argv and not argv[0].startswith("-") and argv[0] not in {"serve", "analyse", "manifest"}:
         argv = ["analyse"] + argv
 
     parser = _build_parser()
     args = parser.parse_args(argv)
+
+    if args.command == "manifest":
+        from .manifest import MANIFEST
+        print(json.dumps(MANIFEST, indent=2))
+        return
 
     if args.command == "serve":
         uvicorn.run(

@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from .core import analyse_repo
+from .manifest import MANIFEST
 from .models import GitAnalysisResult
 
 app = FastAPI(title="git-analyser", version=version("git-analyser"))
@@ -15,6 +16,11 @@ class AnalyseRequest(BaseModel):
 @app.get("/health")
 def health():
     return {"status": "ok", "version": version("git-analyser")}
+
+
+@app.get("/manifest")
+def manifest():
+    return MANIFEST
 
 
 @app.post("/analyse", response_model=GitAnalysisResult)
