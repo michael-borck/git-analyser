@@ -1,6 +1,6 @@
 # git-analyser
 
-Git repository analyser — part of the analyser family.
+Git repository analyser — part of the [analyser family](https://github.com/michael-borck/lens-analysers).
 
 Walks git history to extract commit patterns, file churn, contributor signals, and change velocity. Dispatches file content to code-analyser for per-file quality signals across the history.
 
