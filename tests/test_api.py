@@ -11,7 +11,11 @@ client = TestClient(app)
 def test_health():
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": version("git-analyser")}
+    body = response.json()
+    # /health comes from lens_contract.add_contract_routes (status/version/uptime).
+    assert body["status"] == "ok"
+    assert body["version"] == version("git-analyser")
+    assert isinstance(body["uptime"], float)
 
 
 def test_analyse_valid_repo(temp_repo):

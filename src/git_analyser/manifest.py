@@ -5,22 +5,12 @@ it claims no extensions for auto-routing (auto-analyser reaches it explicitly).
 """
 from __future__ import annotations
 
-from importlib.metadata import PackageNotFoundError, version
+from lens_contract import make_manifest
 
-
-def _version() -> str:
-    try:
-        return version("git-analyser")
-    except PackageNotFoundError:
-        return "0.0.0"
-
-
-MANIFEST: dict = {
-    "name": "git-analyser",
-    "version": _version(),
-    "role": "analyser",
-    "accepts": ["git-repo"],
-    "extensions": [],
-    "auto_routable": False,
-    "produces": "GitAnalysisResult",
-}
+MANIFEST = make_manifest(
+    name="git-analyser",
+    accepts=["git-repo"],
+    extensions=[],
+    auto_routable=False,
+    produces="GitAnalysisResult",
+)

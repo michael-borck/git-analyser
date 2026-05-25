@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from importlib.metadata import version as _pkg_version
-
 import argparse
 import json
 import sys
+from importlib.metadata import version as _pkg_version
 
-import uvicorn
 from rich.console import Console
 from rich.table import Table
 
@@ -15,77 +13,41 @@ from .core import analyse_repo
 console = Console()
 
 
-def _build_parser() -> argparse.ArgumentParser:
+def main() -> None:
+    from lens_contract import run_contract_subcommands
+
+    from .manifest import MANIFEST
+
+    # `serve` and `manifest` are the family's shared subcommands (lens-contract).
+    if run_contract_subcommands(
+        MANIFEST,
+        app_path="git_analyser.api:app",
+        default_port=8007,
+        env_prefix="GIT_ANALYSER",
+    ):
+        return
+
     parser = argparse.ArgumentParser(
         prog="git-analyser",
         description="Analyse git repository history and commit patterns",
+        epilog="subcommands: `serve` (run the HTTP API), `manifest` (print the capability manifest)",
     )
     parser.add_argument("--version", action="version", version=_pkg_version("git-analyser"))
+    parser.add_argument("repo", help="Local path or remote URL to git repository")
+    parser.add_argument("--json", action="store_true", help="Output as JSON")
+    args = parser.parse_args()
 
-    sub = parser.add_subparsers(dest="command")
+    result = analyse_repo(args.repo)
 
-    # serve subcommand
-    serve = sub.add_parser("serve", help="Start the HTTP API server")
-    serve.add_argument("--host", default="127.0.0.1")
-    serve.add_argument("--port", type=int, default=8007)
-
-    # manifest subcommand
-    sub.add_parser("manifest", help="Print the capability manifest as JSON")
-
-    # analyse subcommand (also the default when no subcommand is given)
-    analyse = sub.add_parser("analyse", help="Analyse a git repository (default)")
-    analyse.add_argument(
-        "repo",
-        help="Local path or remote URL to git repository",
-    )
-    analyse.add_argument("--json", action="store_true", help="Output as JSON")
-
-    return parser
-
-
-def main() -> None:
-    # Support the short form: git-analyser <repo> [--json]
-    # by detecting whether the first non-flag arg looks like a subcommand.
-    argv = sys.argv[1:]
-
-    # If first positional arg is not a known subcommand, inject "analyse"
-    known_commands = {"serve", "analyse", "manifest", "--help", "-h", "--version"}
-    if argv and not argv[0].startswith("-") and argv[0] not in {"serve", "analyse", "manifest"}:
-        argv = ["analyse"] + argv
-
-    parser = _build_parser()
-    args = parser.parse_args(argv)
-
-    if args.command == "manifest":
-        from .manifest import MANIFEST
-        print(json.dumps(MANIFEST, indent=2))
+    if args.json:
+        print(json.dumps(result.model_dump(), indent=2))
         return
 
-    if args.command == "serve":
-        uvicorn.run(
-            "git_analyser.api:app",
-            host=args.host,
-            port=args.port,
-        )
-        return
+    if result.error:
+        console.print(f"[red]Error:[/red] {result.error}")
+        sys.exit(1)
 
-    if args.command == "analyse":
-        result = analyse_repo(args.repo)
-
-        if args.json:
-            print(json.dumps(result.model_dump(), indent=2))
-            return
-
-        if result.error:
-            console.print(f"[red]Error:[/red] {result.error}")
-            sys.exit(1)
-
-        _display_result(result)
-        return
-
-    # No command given — print help
-    parser.print_help()
-    sys.exit(1)
+    _display_result(result)
 
 
 def _display_result(result) -> None:
