@@ -4,7 +4,7 @@ Git repository analyser — part of the [analyser family](https://github.com/mic
 
 Walks git history to extract commit patterns, file churn, contributor signals, and change velocity. Dispatches file content to code-analyser for per-file quality signals across the history.
 
-**Status:** Coming soon. Name reserved.
+**Status:** Available on PyPI.
 
 ## Installation
 
